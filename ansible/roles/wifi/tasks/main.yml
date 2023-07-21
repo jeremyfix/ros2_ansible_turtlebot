@@ -1,0 +1,31 @@
+# - name: Check the variables
+#   debug:
+#     var: robot_wifi_ssid
+
+- name: Check if the environment variable ROBOT_WIFI_SSID is defined
+  fail: 
+    msg: "The environment variable ROBOT_WIFI_SSID must be defined"
+  when: robot_wifi_ssid | trim == ''
+
+- name: Check if the environment variable ROBOT_WIFI_PASSWORD is defined
+  fail: 
+    msg: "The environment variable ROBOT_WIFI_PASSWORD must be defined"
+  when: robot_wifi_password | trim == ''
+
+- name: Copy network configuration for turtlebot2
+  template: 
+    src: files/etc/netplan/50-cloud-init-turtlebot2.yaml 
+    dest: /etc/netplan/50-cloud-init.yaml 
+    owner: root
+    group: root
+    mode: 0644
+  when: "'turtlebot2' in group_names"
+
+- name: Copy network configuration for turtlebot3
+  template: 
+    src: files/etc/netplan/50-cloud-init-turtlebot3.yaml 
+    dest: /etc/netplan/50-cloud-init.yaml 
+    owner: root
+    group: root
+    mode: 0644
+  when: "'turtlebot3' in group_names"

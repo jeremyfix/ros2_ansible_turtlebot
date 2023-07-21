@@ -1,0 +1,3 @@
+- name: shutdown
+  shell: /sbin/shutdown -h now
+  become: true

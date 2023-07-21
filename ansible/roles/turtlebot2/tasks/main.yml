@@ -1,0 +1,207 @@
+- name: Create the workspace
+  file:
+    path: /home/ubuntu/ros2_ws/src
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Git checkout Sophus 1.3.x for ROS2 humble
+  become: true
+  become_user: ubuntu
+  git:
+    repo: 'https://github.com/stonier/sophus'
+    dest: '/home/ubuntu/GIT/sophus'
+    version: 'release/1.3.x'
+
+- name: Git checkout stonier repositories
+  become: true
+  become_user: ubuntu
+  git:
+    repo: 'https://github.com/stonier/{{ item }}'
+    dest: '/home/ubuntu/GIT/{{ item }}'
+  loop:
+    - ecl_tools
+    - ecl_lite
+    - ecl_core
+
+- name: Git checkout kobuki_ros and kobuki_ros_interfaces from kobuki_base
+  become: true
+  become_user: ubuntu
+  git:
+    repo: 'https://github.com/kobuki-base/{{ item }}'
+    dest: '/home/ubuntu/GIT/{{ item }}'
+  loop:
+    - cmd_vel_mux
+    # - kobuki_core
+    # - kobuki_ros
+    - kobuki_ros_interfaces
+
+# For the modification of the CMakeLists.txt, see below
+- name: Git checkout kobuki_core (specific because we modify its CMakeLists.txt)
+  become: true
+  become_user: ubuntu
+  git:
+    repo: 'https://github.com/kobuki-base/{{ item }}'
+    dest: '/home/ubuntu/GIT/{{ item }}'
+    force: true
+  loop:
+    - kobuki_core
+
+- name: Git checkout kobuki_ros (specific because we modify the config of kobuki_node)
+  become: true
+  become_user: ubuntu
+  git:
+    repo: 'https://github.com/kobuki-base/{{ item }}'
+    dest: '/home/ubuntu/GIT/{{ item }}'
+    force: true
+  loop:
+    - kobuki_ros
+
+- name: Make symbolic links to kobuki_core, kobuki_ros and kobuki_ros_interfaces
+  file: 
+    src: "/home/ubuntu/GIT/{{ item }}"
+    dest: "/home/ubuntu/ros2_ws/src/{{ item }}"
+    owner: ubuntu
+    group: ubuntu
+    state: link
+  loop:
+    - sophus
+    - ecl_tools
+    - ecl_lite
+    - ecl_core
+    - cmd_vel_mux
+    - kobuki_core
+    - kobuki_ros
+    - kobuki_ros_interfaces
+
+- name: Fix the compilation of kobuki_core, required, see issue kobuki_core:#49, 
+  blockinfile: 
+    path: /home/ubuntu/GIT/kobuki_core/CMakeLists.txt
+    insertafter: "ecl_enable_cxx_warnings()"
+    block: "set(CMAKE_CXX_STANDARD 20)"
+
+- name: Changes the used devices by the config of kobuki node to our udev defined device
+  lineinfile:
+    path: "/home/ubuntu/ros2_ws/src/kobuki_ros/kobuki_node/config/kobuki_node_params.yaml"
+    regexp: "    device_port: /dev/ttyUSB0$"
+    line: "    device_port: /dev/Kobuki" 
+
+- name: Install openni2-camera
+  become: true
+  become_user: ubuntu
+  git:
+    repo: 'https://github.com/ros-drivers/openni2_camera'
+    dest: '/home/ubuntu/GIT/openni2_camera'
+    version: 'ros2'
+
+- name: Make symbolic links to in ros2_ws
+  file: 
+    src: "/home/ubuntu/GIT/{{ item }}"
+    dest: "/home/ubuntu/ros2_ws/src/{{ item }}"
+    owner: ubuntu
+    group: ubuntu
+    state: link
+  loop:
+    - openni2_camera
+
+
+## This is failing
+## - a lot of missing dependencies are listed, such as ecl_time_lite, ecl_type_traits, ecl_utilities, ..
+## I tried without become_user. Actually, it may just be to find a way to get the list   rosdep install -i 
+## and being able to then run a "sudo apt" issued by rosdep
+##
+#- name: Install packages dependencies
+#  shell: source /opt/ros/{{ ros_version }}/setup.bash && rosdep install -i --from-path src
+#  become: true
+#  args:
+#    chdir: "/home/ubuntu/ros2_ws"
+#    executable: /bin/bash 
+#  when: False
+
+- name: Install package dependencies (list taken from rosdep check)
+  apt: pkg="{{ item }}" state=present update_cache=true
+  loop:
+    - ros-{{ ros_version }}-angles
+    - ros-{{ ros_version }}-diagnostic-updater
+    - ros-{{ ros_version }}-xacro
+    - ros-{{ ros_version }}-joint-state-publisher
+    - ros-{{ ros_version }}-ros-testing
+    - ros-{{ ros_version }}-camera-info-manager
+    - ros-{{ ros_version }}-image-transport
+    - libopenni2-dev
+    - ros-{{ ros_version }}-depth-image-proc
+    # - ros-{{ ros_version }}-robot-upstart
+    - ros-{{ ros_version }}-usb-cam
+
+- name: Build the packages
+  become: true
+  become_user: ubuntu
+  shell: |
+    source /opt/ros/{{ ros_version  }}/setup.bash # .bashrc is not loaded !
+    colcon build --symlink-install 
+  args:
+    chdir: "/home/ubuntu/ros2_ws"
+    executable: /bin/bash
+
+
+- name: Install hls LDS 01 driver mounted on the robot
+  apt: pkg=ros-humble-hls-lfcd-lds-driver state=present update_cache=true
+
+- name: Install the package to filter the contact points of the chassis
+  apt: pkg=ros-humble-laser-filters state=present update_cache=true
+
+- name: Installs the udev rule for the LDS 01 laser and Openni2 Xtion camera
+  copy:
+    src: etc/udev/rules.d/{{ item }}
+    dest: /etc/udev/rules.d/{{ item }}
+  loop:
+    - 60-hlds-laser.rules
+    - 61-openni2-xtion.rules
+    - 62-kobuki.rules
+  notify:
+    - Reload udevadm
+
+
+- name: "Add source setup.bash of /home/ubuntu/ros2_ws/install/setup.bash"
+  become: true
+  become_user: ubuntu
+  lineinfile:
+    path: "~/.bashrc"
+    line: "source /home/ubuntu/ros2_ws/install/setup.bash"
+
+
+- name: "Adds ROS_DOMAIN_ID definition in bashrc"
+  remote_user: ansible
+  become: true
+  become_user: ubuntu
+  lineinfile:
+    path: "~/.bashrc"
+    line: "export ROS_DOMAIN_ID={{ ros_domain_id }}"
+
+- name: Install the basic launch file
+  copy:
+    src: home/ubuntu/robot.launch.py
+    dest: /home/ubuntu/robot.launch.py
+    owner: ubuntu
+    group: ubuntu
+
+- name: Install the range filter params
+  copy:
+    src: home/ubuntu/range_filter.yaml
+    dest: /home/ubuntu/range_filter.yaml
+    owner: ubuntu
+    group: ubuntu
+
+
+- name: Install the ros2turtlebot service file
+  template:
+    src: files/etc/systemd/system/ros2turtlebot.service
+    dest: /etc/systemd/system/ros2turtlebot.service
+
+- name: Enable service ros2turtlebot
+  service:
+    daemon_reload: True
+    name: ros2turtlebot
+    enabled: yes
+

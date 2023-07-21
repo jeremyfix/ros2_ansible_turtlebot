@@ -1,0 +1,2 @@
+robot_wifi_ssid: " {{ lookup('env', 'ROBOT_WIFI_SSID') }}"
+robot_wifi_password: " {{ lookup('env', 'ROBOT_WIFI_PASSWORD') }}"

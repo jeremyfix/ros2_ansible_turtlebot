@@ -1,0 +1,12 @@
+- name: Disable suspend and hibernation
+  systemd: 
+    masked: true
+    name: "{{ item }}"
+  with_items: 
+    - sleep.target
+    - suspend.target
+    - hibernate.target
+    - hybrid-sleep.target
+    # Prevent boot-up delay even if there is no network at startup
+    # - systemd-networkd-wait-online.service
+

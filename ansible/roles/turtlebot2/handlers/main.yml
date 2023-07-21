@@ -1,0 +1,3 @@
+---
+- name: Reload udevadm
+  shell: "udevadm control --reload-rules && udevadm trigger"

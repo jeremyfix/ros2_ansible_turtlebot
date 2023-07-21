@@ -1,0 +1,15 @@
+- name: Install locales parckages
+  apt: 
+    state: present
+    update_cache: yes
+    pkg:
+      - locales
+
+- name: Generate the system locale
+  shell: locale-gen en_US en_US.UTF-8
+  become: true
+
+- name: Update the locale
+  shell: update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+  become: true
+

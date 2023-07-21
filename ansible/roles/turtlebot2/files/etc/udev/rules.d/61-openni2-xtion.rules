@@ -1,0 +1,1 @@
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1d27", ATTRS{idProduct}=="0601", MODE:="0666", GROUP:="dialout", SYMLINK+="AsusTek"

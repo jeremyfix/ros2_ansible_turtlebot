@@ -1,0 +1,8 @@
+# Ntp configuration
+- name: Install ntp
+  apt: pkg=ntp state=present update_cache=true
+
+- name: Copy Ntp configuration file
+  template: src=etc/ntp.conf dest=/etc/ntp.conf owner=root group=root mode=0644
+  notify:
+   - Restart ntpd

@@ -1,0 +1,25 @@
+# This is the default ansible 'hosts' file.
+#
+# It should live in /usr/local/etc/ansible/hosts
+#
+#   - Comments begin with the '#' character
+#   - Blank lines are ignored
+#   - Groups of hosts are delimited by [header] elements
+#   - You can enter hostnames or ip addresses
+#   - A hostname/ip can be a member of multiple groups
+
+[turtlebot_hosts:children]
+turtlebot3_hosts
+turtlebot2_hosts
+
+[turtlebot_hosts:vars]
+ros_version=humble
+config_system_locale=en_US.UTF-8
+config_system_language=en_US.UTF-8
+ntp_master=0.ubuntu.pool.ntp.org
+
+[turtlebot2_hosts]
+dummy.hostname.for_turtle2 ros_domain_id=31 arch=amd64
+
+[turtlebot3_hosts]
+dummy.hostname.for_turtle3 ros_domain_id=37 arch=arm64 lds_model=LDS-01 turtlebot3_model=burger

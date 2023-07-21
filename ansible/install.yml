@@ -1,0 +1,23 @@
+---
+- hosts:
+  - turtlebot_hosts
+  roles:
+    - wifi
+    - apt
+    - power
+    # - reboot # Crashs on turtle4, turtle5, turtle6 ?!
+    - locale
+    - ntp
+    - ros2
+
+- hosts:
+  - turtlebot3_hosts
+  roles:
+    - swap # https://github.com/ROBOTIS-GIT/turtlebot3/issues/965
+    - opencr
+    - turtlebot3
+
+- hosts:
+  - turtlebot2_hosts
+  roles:
+    - turtlebot2

@@ -1,0 +1,51 @@
+
+- name: Get the ROS2 GPG key
+  apt_key:
+    url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
+    keyring: /usr/share/keyrings/ros-archive-keyring.gpg
+    state: present
+
+- name: Install the ROS2 apt repository
+  apt_repository: 
+    repo: deb [arch="{{ arch }}" signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu {{ ansible_distribution_release }} main
+    filename: ros2
+
+- name: Install required dependencies
+  apt:
+    state: present
+    update_cache: yes
+    pkg:
+      - software-properties-common
+      - curl
+      - python3-argcomplete 
+      - python3-colcon-common-extensions  # For colcon
+      - python3-rosdep
+      - libboost-system-dev
+      - build-essential
+
+- name: Installation of ROS "{{ ros_version }}" packages
+  apt:
+    state: present
+    update_cache: yes
+    pkg:
+      - "{{ item }}"
+  loop:
+    - "ros-{{ ros_version }}-ros-base"
+    - "ros-{{ ros_version }}-hls-lfcd-lds-driver"
+
+- name: Installation of libudev
+  apt: pkg=libudev-dev state=present update_cache=true
+
+- name: Initialize rosdep
+  shell: source /opt/ros/{{ ros_version  }}/setup.bash && rosdep init
+  become: True
+  args:
+    executable: /bin/bash
+    creates: "/etc/ros/rosdep/sources.list.d/20-default.list"
+
+- name: Update rosdep for ubuntu user
+  shell: source /opt/ros/{{ ros_version  }}/setup.bash  && rosdep update
+  become: true
+  become_user: ubuntu
+  args:
+    executable: /bin/bash

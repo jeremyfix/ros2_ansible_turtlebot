@@ -1,0 +1,28 @@
+- name: Check if swap is already defined
+  lineinfile:
+    path: /etc/fstab
+    line: /swapfile swap swap defaults 0 0
+    state: absent
+  check_mode: yes
+  register: swap_in_fstab
+  changed_when: false
+
+- name: Make the swap 
+  shell: |
+    swapoff /swapfile
+    fallocate -l 2G /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+  become: true
+  when: not swap_in_fstab.found
+
+- name: Define the swap in fstab
+  lineinfile:
+    path: /etc/fstab
+    line: /swapfile swap swap defaults 0 0
+    state: present
+  when: not swap_in_fstab.found
+
+- name: Reboot the turtle, you may need to switch it off and on again
+  reboot:
+  when: not swap_in_fstab.found
