@@ -9,7 +9,19 @@ Working setup:
 - ubuntu 22.04
 - ROS2 humble
 
+These roles will :
 
+- do the update/upgrade from apt
+- setup the locale
+- setup ntp
+- setup the wifi
+- update the firmware of the turtlebot3
+- prevent power off when lid is closed on turtlebot2
+- install ROS2 humble 
+- configure a swap space on the turltbot3
+- compile the ROS2 turtlebot packages (see roles turtlebot2 and turtlebot3)
+- setup a rangle filter on the turtlebot2 (in our setup, we added a LDS scanner and the bones of the robot architecture hit the laser, these hits are filtered)
+- install a systemd service to ensure a robot.launch.py launch file is ran on computer start  
 
 # Basic installation
 
@@ -31,7 +43,9 @@ For turtlebot2, our robots possess a laptop and the initial configuration is to 
 - user login : ubuntu
 - user password : whatever you want
 
-Then you need to create an ansible user. TO BE CONTINUED ...
+Then you need to create an ansible user. 
+
+**TO BE CONTINUED ...**
 
 ## Turtlebot3 with RPI3
 
@@ -40,9 +54,8 @@ Our turtlebot3 are equiped with a raspberry pi 3. The steps to get the initial c
 1- Burn with rpi imager a ubuntu 22.04 64 bits; Be sure to select the version for your raspberry 
 2- modify and copy the files user-data meta-data and network-config to the system-boot partition
 
-Taking the template files we provide, you need to bring in the following modifications
+Taking the template files we provide in `turtlebot3_basic/`, you need to bring in the following modifications
 
-- in user-data: in the ssh_authorized_keys key, you need to paste the content of the `ansible/keys/id_rsa_ansible.pub` file,
 - in user-data: change the name of the hostname so that it matches the DNS name,
 - in network-config, you need to replace ROBOT_WIFI_SSID and ROBOT_WIFI_PASSWORD by their correct values.
 
@@ -57,3 +70,24 @@ ssh -i ansible/keys/id_rsa ansible@MYROBOTHOSTNAME
 and the login should be performed without asking for a password.
 
 # Deploying ROS2 with ansible
+
+## Setting up the inventory
+
+The list of turtlebots you want to deploy is specified in the `ansible/etc/hosts` file. There are two dummy entries. You need to adapt this file with your settings.
+
+One of the role is ensuring the wifi is correctly setup, you need to define two eenvironment variables and then run the playbook
+
+```
+export ROBOT_WIFI_SSID=xxxxx
+export ROBOT_WIFI_PASSWORD=xxxx
+cd ansible
+./scripts/run-playbook.sh install.yml turtlebot_hosts
+```
+
+If you want to apply the playbook to only one host, you can change the playbook execution to only this host :
+
+```
+./scripts/run-playbook.sh install.yml dummy.hostname.for_turtle3
+```
+
+Then it will take some time. On turtlebot3, around 2hours.
