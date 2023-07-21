@@ -45,7 +45,48 @@ For turtlebot2, our robots possess a laptop and the initial configuration is to 
 
 Then you need to create an ansible user. 
 
-**TO BE CONTINUED ...**
+In detail :
+
+- you have to burn a ubuntu 22.04 server ISO with Startup Disk Creator
+- then boot on the live USB and once the GRUB pops out, edit the line "Try or install" and adds the "autoinstall" :
+
+```
+linux   /casper/vmlinuz autoinstall quiet 
+```
+Then run this entry.
+
+Answer all the questions, basically on my side :
+
+- Set English as the language ,  but French for the keyboard
+- set up the WIFI to connect to our SSID  and wait for the connection to be established
+- tick the box "Install OpenSSH" 
+- username :  ubuntu   with password   turtlebot
+- hostname, but the ansible roles will fix that anyway
+- do not change anything for the disk layout, use the whole drive as suggested, do not changed anything on the snap package list they propose
+
+Once install, reboot. Then SSH to the turtlebot and :
+
+```
+sudo adduser ansible
+```
+
+The password can be random, you just need to keep it in mind for the following command
+
+From your terminal :
+
+```
+ssh-copy-id -i ansible/keys/id_rsa_ansible.pub ansible@YOUR_TURTLEBOT_HOSTNAME
+```
+
+There, that's the only place you need to provide the password. Then you can forget about it.
+
+Finally, create a file    `sudo vim /etc/sudoers.d/ansible` with the following content :
+
+```
+ansible  ALL=(ALL) NOPASSWD:ALL
+```
+
+Then, from there, ansible user can sudo with password and you can proceed with [Deploying ROS2 with ansible](#Deploying ROS2 with ansible) section.
 
 ## Turtlebot3 with RPI3
 
@@ -90,4 +131,4 @@ If you want to apply the playbook to only one host, you can change the playbook 
 ./scripts/run-playbook.sh install.yml dummy.hostname.for_turtle3
 ```
 
-Then it will take some time. On turtlebot3, around 2hours.
+Then it will take some time. On turtlebot3, around 2hours. On turtlebot2, I do not remember how much time, certainly faster than turtlebot3.
