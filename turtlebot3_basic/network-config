@@ -1,0 +1,15 @@
+network:
+  version: 2
+  ethernets:
+    eth0:
+      optional: true
+      dhcp4: true
+      dhcp6: true
+  wifis:
+    wlan0:
+      optional: true
+      dhcp4: true
+      dhcp6: true
+      access-points:
+        "ROBOT_WIFI_SSID":
+          password: "ROBOT_WIFI_PASSWORD"

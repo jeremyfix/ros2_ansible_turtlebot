@@ -1,0 +1,25 @@
+#cloud-config
+hostname: HOSTNAME_TO_BE_REPLACED #TODO
+users:
+- default
+- name: ubuntu
+  plain_text_passwd: 'turtlebot'
+- name: ansible
+  gecos: Ansible User
+  groups: users,admin,wheel
+  sudo: ALL=(ALL) NOPASSWD:ALL
+  shell: /bin/bash
+  lock_passwd: true
+  ssh_authorized_keys:
+    - "ssh-rsa xxxxxxx COPY HERE THE CONTENT OF THE ansible/keys/id_rsa_ansible.pub" #TODO
+keyboard:
+  layout: fr
+chpasswd:
+  expire: false
+  users:
+    - name: ubuntu
+      password: turtlebot
+      type: text
+
+# Enable password authentication with the SSH daemon
+ssh_pwauth: true
