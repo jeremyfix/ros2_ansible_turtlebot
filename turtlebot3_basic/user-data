@@ -11,7 +11,7 @@ users:
   shell: /bin/bash
   lock_passwd: true
   ssh_authorized_keys:
-    - "ssh-rsa xxxxxxx COPY HERE THE CONTENT OF THE ansible/keys/id_rsa_ansible.pub" #TODO
+	- "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDNIyXPEMTv8rTFtnikKntZUJ+kC2QsyCBJHeQrd38Enrje5PEpg/Y+HIaD6E/zDYfs8ZR3DJepkDRynxw/maaUPl5guy4DDXEYdskDrZomQpe9VzRFlH97VlV42zqowAI3OCPAmB63FUkpyH7sSZ8vNmn2mMZ6c9NnK08YSa0Pbi3BNOQ0w06L8CzstUoql8JS2vwgc/3yNSjGvvODMANNtxO3NbT5dOtS6t9li/2ZB8Ff1KJklPB+ABlFGsfymG/p8fguQbR6QOy+FPnbsMZVrEispcBtirESxW58ckGhFjDMSt8xCLBKwWlmfKkLjxlyHZjT/BW3vLmwlhBmGtON user@turtlebot"
 keyboard:
   layout: fr
 chpasswd:
