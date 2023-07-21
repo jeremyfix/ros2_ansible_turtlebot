@@ -23,9 +23,21 @@ These roles will :
 - setup a rangle filter on the turtlebot2 (in our setup, we added a LDS scanner and the bones of the robot architecture hit the laser, these hits are filtered)
 - install a systemd service to ensure a robot.launch.py launch file is ran on computer start  
 
+Table of content :
+
+- [Basic installation](#basic-installation)
+	- [Ansible ssh key generation](#ansible-ssh-key-generation)
+	- [Turtlebot2](#turtlebot2)
+	- [Turtlebot3 with RPI3](#turtlebot3-with-rpi3)
+- [Deploying ROS2 with ansible](#deploying-ros2-with-ansible)
+	- [Setting up the inventory](#setting-up-the-inventory)
+	- [Customizing the roles](#customizing-the-roles)
+	- [Running the playbook](#running-the-playbook)
+	- [Testing the installation](#testing-the-installation)
+
 # Basic installation
 
-## Ansible ssh key generation
+## Ansible ssh key generation (optional)
 
 We first need to generate a ssh key that will be used for the ansible user 
 
@@ -116,6 +128,14 @@ and the login should be performed without asking for a password.
 
 The list of turtlebots you want to deploy is specified in the `ansible/etc/hosts` file. There are two dummy entries. You need to adapt this file with your settings.
 
+## Customizing the roles
+
+Our turtlebot2 are equiped with a LDS scanner. Its location is published in the launch file `ansible/roles/turtlebot2/files/home/ubuntu/robot.launch.py`. You may need to adapt it.
+
+If you do not have a LDS, you may even need to remove that part and the corresponding executions in the turtlebot2 role.
+
+## Running the playbook
+
 One of the role is ensuring the wifi is correctly setup, you need to define two eenvironment variables and then run the playbook
 
 ```
@@ -132,3 +152,17 @@ If you want to apply the playbook to only one host, you can change the playbook 
 ```
 
 Then it will take some time. On turtlebot3, around 2hours. On turtlebot2, I do not remember how much time, certainly faster than turtlebot3.
+
+## Testing the installation
+
+On your host, you can interact with the turtlebot ROS2 nodes :
+
+```
+source /opt/ros/humble.setup.bash
+export ROS_DOMAIN_ID=xx
+ros2 topic list
+```
+
+where `ROS_DOMAIN_ID` depends on the value given the ansible host `ansible/etc/hosts`.
+
+You should see the list of topics, like `/scan`, `/tf` , etc..
