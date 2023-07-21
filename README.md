@@ -86,7 +86,7 @@ Finally, create a file    `sudo vim /etc/sudoers.d/ansible` with the following c
 ansible  ALL=(ALL) NOPASSWD:ALL
 ```
 
-Then, from there, ansible user can sudo with password and you can proceed with [Deploying ROS2 with ansible](#Deploying ROS2 with ansible) section.
+Then, from there, ansible user can sudo with password and you can proceed with [Deploying ROS2 with ansible](#deploying-ros2-with-ansible) section.
 
 ## Turtlebot3 with RPI3
 
