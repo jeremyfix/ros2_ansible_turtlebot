@@ -54,5 +54,6 @@ After, say , 5 - 10 minutes, you should be able to ping your robot and the follo
 ssh -i ansible/keys/id_rsa ansible@MYROBOTHOSTNAME
 ```
 
+and the login should be performed without asking for a password.
 
 # Deploying ROS2 with ansible
