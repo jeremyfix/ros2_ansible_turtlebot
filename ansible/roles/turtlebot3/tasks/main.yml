@@ -1,3 +1,9 @@
+
+# raspi-config, used for setting the camera in legacy mode to make
+# it work with ROS2
+- name: Installation of raspi-config
+  apt: pkg=raspi-config state=present update_cache=true
+
 - name: Create the workspace
   file:
     path: /home/ubuntu/ros2_ws/src
@@ -23,7 +29,10 @@
   loop:
     - "ros-{{ ros_version }}-turtlebot3-msgs"
     - "ros-{{ ros_version }}-dynamixel-sdk"
+    - "ros-{{ ros_version }}-image-transport"
+    - "ros-{{ ros_version }}-image-transport-plugins"
     - "ros-{{ ros_version }}-v4l2-camera"
+    - "ros-{{ ros_version }}-image-tools"
 
 - name: Make symbolic links to the necessary components
   file: 
