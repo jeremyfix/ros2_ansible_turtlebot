@@ -27,6 +27,23 @@ def generate_launch_description():
                 PythonLaunchDescriptionSource([turtlebot3_pkg_dir, "robot.launch.py"])
             ),
             # Add the camera node
-            Node(package="v4l2_camera", executable="v4l2_camera_node", name="camera"),
+            Node(
+                package="v4l2_camera",
+                executable="v4l2_camera_node",
+                name="camera",
+                remappings=[
+                    ("/image_raw", "/base_image_raw"),
+                    ("/image_raw/compressed", "/base_image_raw/compressed"),
+                ],
+            ),
+            Node(
+                package="st5",
+                executable="invert_cam",
+                name="camera_inverter",
+                remappings=[
+                    ("in", "/base_image_raw/compressed"),
+                    ("out", "/image_raw/compressed"),
+                ],
+            ),
         ]
     )

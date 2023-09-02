@@ -1,110 +1,110 @@
 
-# raspi-config, used for setting the camera in legacy mode to make
-# it work with ROS2
-- name: Installation of raspi-config
-  apt: pkg=raspi-config state=present update_cache=true
+# # raspi-config, used for setting the camera in legacy mode to make
+# # it work with ROS2
+# - name: Installation of raspi-config
+#   apt: pkg=raspi-config state=present update_cache=true
 
-- name: Create the workspace
-  file:
-    path: /home/ubuntu/ros2_ws/src
-    state: directory
-    owner: ubuntu
-    group: ubuntu
-    mode: '0755'
+# - name: Create the workspace
+#   file:
+#     path: /home/ubuntu/ros2_ws/src
+#     state: directory
+#     owner: ubuntu
+#     group: ubuntu
+#     mode: '0755'
 
-- name: Git checkout turtlebot3 from ROBOTIS-GIT
-  become: true
-  become_user: ubuntu
-  git:
-    repo: 'https://github.com/ROBOTIS-GIT/turtlebot3.git'
-    dest: /home/ubuntu/GIT/turtlebot3
-    version: '{{ ros_version }}-devel'
-
-- name: Installation of ROS "{{ ros_version }}" packages
-  apt:
-    state: present
-    update_cache: yes
-    pkg:
-      - "{{ item }}"
-  loop:
-    - "ros-{{ ros_version }}-turtlebot3-msgs"
-    - "ros-{{ ros_version }}-dynamixel-sdk"
-    - "ros-{{ ros_version }}-image-transport"
-    - "ros-{{ ros_version }}-image-transport-plugins"
-    - "ros-{{ ros_version }}-v4l2-camera"
-    - "ros-{{ ros_version }}-image-tools"
-
-- name: Make symbolic links to the necessary components
-  file: 
-    src: "/home/ubuntu/GIT/turtlebot3/{{ item }}"
-    dest: "/home/ubuntu/ros2_ws/src/{{ item }}"
-    owner: ubuntu
-    group: ubuntu
-    state: link
-  loop:
-    - turtlebot3_bringup
-    - turtlebot3_description
-    - turtlebot3_node
-
-
-# - name: Git checkout ld08 driver (on new platforms)
+# - name: Git checkout turtlebot3 from ROBOTIS-GIT
+#   become: true
+#   become_user: ubuntu
 #   git:
-#     repo: 'https://github.com/ROBOTIS-GIT/ld08_driver.git'
-#     dest: /home/ubuntu/ros2_ws/src/ld08_driver
-#     version: 'ros2-devel'
+#     repo: 'https://github.com/ROBOTIS-GIT/turtlebot3.git'
+#     dest: /home/ubuntu/GIT/turtlebot3
+#     version: '{{ ros_version }}-devel'
 
-- name: "Add source setup.bash of /opt/ros/{{ ros_version }}"
-  remote_user: ansible
-  become: true
-  become_user: ubuntu
-  lineinfile:
-    path: "~/.bashrc"
-    line: "source /opt/ros/{{ ros_version }}/setup.bash"
+# - name: Installation of ROS "{{ ros_version }}" packages
+#   apt:
+#     state: present
+#     update_cache: yes
+#     pkg:
+#       - "{{ item }}"
+#   loop:
+#     - "ros-{{ ros_version }}-turtlebot3-msgs"
+#     - "ros-{{ ros_version }}-dynamixel-sdk"
+#     - "ros-{{ ros_version }}-image-transport"
+#     - "ros-{{ ros_version }}-image-transport-plugins"
+#     - "ros-{{ ros_version }}-v4l2-camera"
+#     - "ros-{{ ros_version }}-image-tools"
 
-- name: log in as ubuntu and compile with colon the turtlebot3 packages
-  remote_user: ansible
-  become: true
-  become_user: ubuntu
-  shell: |
-    source /opt/ros/{{ ros_version  }}/setup.bash # .bashrc is not loaded !
-    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-  args:
-    chdir: "/home/ubuntu/ros2_ws"
-    executable: /bin/bash
+# - name: Make symbolic links to the necessary components
+#   file: 
+#     src: "/home/ubuntu/GIT/turtlebot3/{{ item }}"
+#     dest: "/home/ubuntu/ros2_ws/src/{{ item }}"
+#     owner: ubuntu
+#     group: ubuntu
+#     state: link
+#   loop:
+#     - turtlebot3_bringup
+#     - turtlebot3_description
+#     - turtlebot3_node
 
-- name: "Add source setup.bash of /home/ubuntu/ros2_ws/install/setup.bash"
-  remote_user: ansible
-  become: true
-  become_user: ubuntu
-  lineinfile:
-    path: "~/.bashrc"
-    line: "source /home/ubuntu/ros2_ws/install/setup.bash"
 
-# Once built, we can copy the udev rule file
-# actually, we once generated it 
-- name: Copy the udev rule file
-  copy:
-    src: /home/ubuntu/ros2_ws/install/turtlebot3_bringup/share/turtlebot3_bringup/script/99-turtlebot3-cdc.rules
-    dest: /etc/udev/rules.d/99-turtlebot3-cdc.rules
-    remote_src: true
-  notify:
-    - Reload udevadm
+# # - name: Git checkout ld08 driver (on new platforms)
+# #   git:
+# #     repo: 'https://github.com/ROBOTIS-GIT/ld08_driver.git'
+# #     dest: /home/ubuntu/ros2_ws/src/ld08_driver
+# #     version: 'ros2-devel'
 
-- name: "Adds ROS_DOMAIN_ID definition in bashrc"
-  remote_user: ansible
-  become: true
-  become_user: ubuntu
-  lineinfile:
-    path: "~/.bashrc"
-    line: "export ROS_DOMAIN_ID={{ ros_domain_id }}"
+# - name: "Add source setup.bash of /opt/ros/{{ ros_version }}"
+#   remote_user: ansible
+#   become: true
+#   become_user: ubuntu
+#   lineinfile:
+#     path: "~/.bashrc"
+#     line: "source /opt/ros/{{ ros_version }}/setup.bash"
 
-- name: "Adds LDS_MODEL definition in bashrc"
-  remote_user: ansible
-  become: true
-  become_user: ubuntu
-  lineinfile:
-    path: "~/.bashrc"
-    line: "export LDS_MODEL={{ lds_model }}"
+# - name: log in as ubuntu and compile with colon the turtlebot3 packages
+#   remote_user: ansible
+#   become: true
+#   become_user: ubuntu
+#   shell: |
+#     source /opt/ros/{{ ros_version  }}/setup.bash # .bashrc is not loaded !
+#     colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+#   args:
+#     chdir: "/home/ubuntu/ros2_ws"
+#     executable: /bin/bash
+
+# - name: "Add source setup.bash of /home/ubuntu/ros2_ws/install/setup.bash"
+#   remote_user: ansible
+#   become: true
+#   become_user: ubuntu
+#   lineinfile:
+#     path: "~/.bashrc"
+#     line: "source /home/ubuntu/ros2_ws/install/setup.bash"
+
+# # Once built, we can copy the udev rule file
+# # actually, we once generated it 
+# - name: Copy the udev rule file
+#   copy:
+#     src: /home/ubuntu/ros2_ws/install/turtlebot3_bringup/share/turtlebot3_bringup/script/99-turtlebot3-cdc.rules
+#     dest: /etc/udev/rules.d/99-turtlebot3-cdc.rules
+#     remote_src: true
+#   notify:
+#     - Reload udevadm
+
+# - name: "Adds ROS_DOMAIN_ID definition in bashrc"
+#   remote_user: ansible
+#   become: true
+#   become_user: ubuntu
+#   lineinfile:
+#     path: "~/.bashrc"
+#     line: "export ROS_DOMAIN_ID={{ ros_domain_id }}"
+
+# - name: "Adds LDS_MODEL definition in bashrc"
+#   remote_user: ansible
+#   become: true
+#   become_user: ubuntu
+#   lineinfile:
+#     path: "~/.bashrc"
+#     line: "export LDS_MODEL={{ lds_model }}"
 
 - name: Install the basic launch file
   copy:
@@ -113,22 +113,40 @@
     owner: ubuntu
     group: ubuntu
 
-- name: "Adds turtlebot3 model definition in bashrc"
+- name: Install the image flipper
+  copy:
+    src: home/ubuntu/st5
+    dest: /home/ubuntu/ros2_ws/src/st5
+    owner: ubuntu
+    group: ubuntu
+
+- name: log in as ubuntu and compile the st5 package
   remote_user: ansible
   become: true
   become_user: ubuntu
-  lineinfile:
-    path: "~/.bashrc"
-    line: "export TURTLEBOT3_MODEL={{ turtlebot3_model }}"
+  shell: |
+    source /opt/ros/{{ ros_version  }}/setup.bash # .bashrc is not loaded !
+    colcon build --symlink-install 
+  args:
+    chdir: "/home/ubuntu/ros2_ws"
+    executable: /bin/bash
 
-- name: Install the ros2turtlebot service file
-  template:
-    src: files/etc/systemd/system/ros2turtlebot.service
-    dest: /etc/systemd/system/ros2turtlebot.service
+# - name: "Adds turtlebot3 model definition in bashrc"
+#   remote_user: ansible
+#   become: true
+#   become_user: ubuntu
+#   lineinfile:
+#     path: "~/.bashrc"
+#     line: "export TURTLEBOT3_MODEL={{ turtlebot3_model }}"
 
-- name: Enable service ros2turtlebot
-  service:
-    daemon_reload: True
-    name: ros2turtlebot
-    enabled: yes
+# - name: Install the ros2turtlebot service file
+#   template:
+#     src: files/etc/systemd/system/ros2turtlebot.service
+#     dest: /etc/systemd/system/ros2turtlebot.service
+
+# - name: Enable service ros2turtlebot
+#   service:
+#     daemon_reload: True
+#     name: ros2turtlebot
+#     enabled: yes
 

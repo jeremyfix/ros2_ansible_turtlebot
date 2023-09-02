@@ -4,5 +4,8 @@
 
 - name: Copy Ntp configuration file
   template: src=etc/ntp.conf dest=/etc/ntp.conf owner=root group=root mode=0644
+
+- name: Copy Ntp timezone file
+  template: src=etc/timezone dest=/etc/timezone owner=root group=root mode=0644
   notify:
    - Restart ntpd
